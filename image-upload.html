@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload Example with CropperJS</title>
+
+    <link rel="stylesheet" href="assets/css/cropper.css">
+    <link rel="stylesheet" href="assets/css/bootstrap.css">
+
+
+    <style>
+        #croppedImage{
+            width: 80% !important;
+            margin: auto !important;
+            display: block !important;
+        }
+        #croppedImageFinal{
+            width: 200px;
+            height: 200px;
+            margin: auto !important;
+            display: none;
+        }
+        #photo-upload{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card my-3">
+                
+                  <div class="card-body">
+                    <h5 class="card-title">Image crop for Upload</h5>
+                    <h6 class="card-subtitle mb-2 text-muted ">Using cropper.js and Bootstrap library</h6>
+                    <p class="card-text">See readme for more info</p>
+
+                  </div>
+                </div>
+
+                <div class="card my-3">
+                
+                  <div class="card-body">
+
+                    <div class="container">
+
+                        <div class="row my-3">
+                            <div class="col-12">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                    
+                                <img id="photo-preview" src="assets/img/placeholder.png" alt="Passport Photo" width="200" height="200" class="mb-3">
+                                <canvas id="croppedImageFinal" class="mb-3"></canvas>
+
+                                <form id="" action="" method="post" enctype="multipart/form-data" class="has-validation-callback">
+                                        <div class="mb-3">
+                                            <label for="formFile" class="form-label">Select and image to upload</label>
+                                            <input class="form-control" type="file" id="inputImage">
+                                    </div>
+
+                                    
+                                </form>
+                                <div class="mb-3">
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#imageModal" id="cropButton">Confirm crop</button>
+                                    <button id="photo-upload" class="btn btn-primary waves-effect waves-light">Upload Photo</button>
+                                </div>
+
+                            </div>
+                        </div>
+                    
+
+                
+                <!-- Modal -->
+                <div class="modal fade" id="imageModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Confirm cropped image</h5>
+                        
+                        </div>
+                        <div class="modal-body">
+                            <canvas id="croppedImage"></canvas>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-block btn-danger" data-bs-dismiss="modal" id="cancelButton">Cancel</button>
+                        <button type="button" class="btn btn-success" id="confirmButton">Confirm</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                    
+             </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+  
+</body>
+</html>
+
+<script src="assets/js/bootstrap.js"></script>
+<script src="assets/js/popper.min.js"></script>
+<script src="assets/js/jquery.js"></script>
+<script src="assets/js/cropper.js"></script>
+<script>
+
+$(document).ready(function(){
+
+    //onload
+    let image = document.getElementById('photo-preview');
+    $('#croppedImageFinal').hide();
+    $('#photo-upload').hide();
+
+//add disabled state for buttons before selecting image
+
+    let inputImage = document.getElementById('inputImage');
+    let cropButton = document.getElementById('cropButton');
+    let croppedImage = document.getElementById('croppedImage');
+    let croppedImageFinal = document.getElementById('croppedImageFinal');
+    let confirmButton = document.getElementById('confirmButton');
+    let cancelButton = document.getElementById('cancelButton');
+    let cropper;
+
+    inputImage.addEventListener('change', (event) => {
+      
+        $('#croppedImageFinal').hide();
+        $('#cropButton').show();
+        $('#photo-upload').hide();
+
+        let files = event.target.files;
+        let reader = new FileReader();
+   
+    reader.readAsDataURL(files[0]);
+    reader.onload = () => {
+
+        image.src = reader.result;
+        cropper = null;
+        cropper = new Cropper(image, {
+          
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 1,
+        responsive: true,
+        crop: function(event) {
+            console.log(event.detail.x);
+            console.log(event.detail.y);
+            console.log(event.detail.width);
+            console.log(event.detail.height);
+            console.log(event.detail.rotate);
+            console.log(event.detail.scaleX);
+            console.log(event.detail.scaleY);
+        },
+
+        ready: function(){
+            
+        }
+        });
+    };
+    });
+
+    cropButton.addEventListener('click', () => {
+    let canvas = cropper.getCroppedCanvas();
+    croppedImage.width = canvas.width;
+    croppedImage.height = canvas.height;
+    croppedImage.getContext('2d').drawImage(canvas, 0, 0);
+   
+    });
+
+    cancelButton.addEventListener('click', () => {
+
+        //reload the page
+        window.location.href = window.location.href;
+
+    });
+
+    confirmButton.addEventListener('click', () => {
+  
+       
+        $('#croppedImageFinal').show();
+        $('#photo-preview').hide();
+        $('#imageModal').modal('hide');
+        $('#photo-upload').show();
+        $('#cropButton').hide();
+
+        let canvas = cropper.getCroppedCanvas();
+        croppedImageFinal.width = canvas.width;
+        croppedImageFinal.height = canvas.height;
+        croppedImageFinal.getContext('2d').drawImage(canvas, 0, 0);
+        cropper.destroy();
+
+    });
+
+    //final upload
+//     $('#photo-upload').click(function() {
+//         image.cropper('getCroppedCanvas').toBlob(function(blob) {
+//             var formData = new FormData();
+//             formData.append('photo', blob);
+
+//             $.ajax('/upload', {
+//                 method: 'POST',
+//                 data: formData,
+//                 processData: false,
+//                 contentType: false,
+//                 success: function() {
+//                     alert('Photo uploaded successfully!');
+//                 },
+//                 error: function() {
+//                     alert('Error uploading photo!');
+//                 }
+//             });
+//         });
+//  });
+});
+</script>
